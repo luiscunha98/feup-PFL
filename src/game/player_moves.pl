@@ -1,8 +1,7 @@
 :- consult('board.pl').
 
 
-% possible moves that can be made by the player
-
+% possible moves that can be made by the player:
 %moves need to be like the below definition and be connected directly or indirectly (through other nodes) to the node that the player is currently on
 
 %vertical move
