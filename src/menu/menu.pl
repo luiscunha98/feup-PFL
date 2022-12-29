@@ -19,8 +19,8 @@ mainMenu :-
     mainMenuChoice(Num).
 
 %mainMenu Choice
-mainMenuChoice(0) :- exitGame.
-%mainMenuChoice(1) :- startGame. % Start Game
+mainMenuChoice(0) :- exitGame. % Exit Game
+mainMenuChoice(1) :- gameMenu. % Game Menu
 mainMenuChoice(2) :- help. % Rules
 
 
@@ -30,6 +30,40 @@ exitGame :-
     menuFill,
     menuText('Thank You!'),
     menuFill.
+
+%Game Menu
+gameMenu:-
+    repeat, 
+    clear,
+    menuTitle('WANA'),
+    menuEmptyLine,
+    menuText('Game Settings:'),
+    menuEmptyLine,
+    menuOptionsHeader('Options', 'Description'),
+    menuEmptyLine,
+    menuOption(1, 'Player vs player'),
+    menuOption(2, 'Player vs Computer'),
+    menuOption(3, 'Computer vs Computer'),
+    menuEmptyLine,
+    menuOption(0, 'Exit Game'),
+    menuEmptyLine,
+    menuText('Game Made by: Wana_3'),
+    menuFill, nl,
+    readUntilBetween(0, 3, Num),
+    gameMenuChoice(Num).
+
+% GameMenu Choice
+gameMenuChoice(0) :- exitGame.
+gameMenuChoice(1) :- ppgame. % Player vs Player Game
+gameMenuChoice(2) :- pcgame. % Player vs Computer Game
+gameMenuChoice(3) :- ccgame. % Computer vs Computer Game
+
+pcgame:-
+    chooseDiff('Choose the difficulty for your opponent', Choice).
+
+ccgame:-
+    chooseDiff('Choose the difficulty for computer 1', Choice1),
+    chooseDiff('Choose the difficulty for computer 2', Choice2).
 
 % help
 help :-
@@ -43,3 +77,22 @@ help :-
     write('Press Enter to go back to the Main Menu'),
     skip_line,
     fail. % Go back to menu
+
+
+chooseDiff(Text, Choice) :-
+    clear,
+    menuTitle('Choose Difficulty'),
+    menuEmptyLine,
+    
+    menuText(Text),
+    menuEmptyLine,
+    menuOptionsHeader('Options', 'Description'),
+    menuEmptyLine,
+    
+    menuOption(1, 'Medium'),
+    menuOption(2, 'Hard'),
+    menuEmptyLine,
+    
+    menuFill, nl,
+    readUntilBetween(1, 2, Num),
+    diffMap(Num, Choice).
