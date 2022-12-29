@@ -1,4 +1,7 @@
+:- use_module(library(lists)).
 % Define the nodes and edges of the graph (one node for each position on the board) that represent the board wana game
+
+% Maybe we need to save on node values for line,column and value(p1/p2 players piece) of the node
 
 % create nodes for the 1st row
 node(l11).
