@@ -59,16 +59,16 @@ gameMenuChoice(2) :- pcgame. % Player vs Computer Game
 gameMenuChoice(3) :- ccgame. % Computer vs Computer Game
 
 ppgame:-
-    startGame(p-p).
+    startGame(p,p).
 
 pcgame:-
     chooseDiff('Choose the difficulty for your opponent', Choice),
-    startGame(p-Choice).
+    startGame(p,Choice).
 
 ccgame:-
     chooseDiff('Choose the difficulty for computer 1', Choice1),
     chooseDiff('Choose the difficulty for computer 2', Choice2),
-    startGame(Choice1-Choice2).
+    startGame(Choice1,Choice2).
 
 % help
 help :-
@@ -102,6 +102,9 @@ chooseDiff(Text, Choice) :-
 diffMap(1, m).
 diffMap(2, h).
 
-startGame(Type):-
-    gameInit(Type),
-    fail. % Back to Menu
+startGame(P1, P2) :-
+	boardSize(Size),
+	initial_state(Size, gameState(TurnNumber, Board, player(P1), player(P2))),
+	display_game(gameState(TurnNumber, Board, player(P1), player(P2))),
+	get_code(_),
+	game_cycle(gameState(TurnNumber, Board, player(P1), player(P2))).
