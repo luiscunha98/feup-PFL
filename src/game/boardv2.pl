@@ -41,6 +41,8 @@ findall((X1, Y1, X2, Y2), (between(1, 3, X1), between(1, 2, Y1), X2 is X1, Y2 is
                          between(4, 6, X1), between(1, 1, Y1), X2 is X1, Y2 is 9;       
                           ), AllMoves).
 
+% if player wants to move a marble from directly from edge to edge he needs specify that when playing
+
 % The main predicate for the game
 % The first argument is the player (1 for player 1, 2 for player 2)
 % The second argument is the board

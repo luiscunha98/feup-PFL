@@ -1,7 +1,7 @@
 
-printPiece(piece(white)) :- write(' O ').
+printPiece(piece(p1)) :- write(' O ').
 
-printPiece(piece(black)) :- write(' X ').
+printPiece(piece(p2)) :- write(' X ').
 
 printPiece(piece(none))  :- write(' . ').
 
