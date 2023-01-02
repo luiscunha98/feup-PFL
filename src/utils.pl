@@ -1,6 +1,9 @@
 :-use_module(library(lists)).
 :-use_module(library(between)).
 
+%Returns the new board after a move is made
+%Test available in tests.pl
+%setPiece(+Board, +X, +Y, +Piece, -NewBoard)
 setPiece(Board, X, Y, Piece, NewBoard) :-
     AuxY is Y-1,
     AuxX is X-1,

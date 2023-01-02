@@ -1,11 +1,11 @@
+printPiece(piece(white)) :- write(' O ').
 
-printPiece(piece(p1)) :- write(' O ').
-
-printPiece(piece(p2)) :- write(' X ').
+printPiece(piece(black)) :- write(' X ').
 
 printPiece(piece(none))  :- write(' . ').
 
 printPiece(piece(block)) :- write(' # ').
+
 
 display_game(gameState(_, Board, _, _)) :-
 	% nl, write('   1  2  3  4  5  6  7  '), nl,

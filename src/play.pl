@@ -1,6 +1,5 @@
 %Consults
 :- consult('utils.pl').
-:- consult('io.pl').
 
 :- consult('game/game.pl').
 :- consult('game/display.pl').

@@ -101,10 +101,3 @@ chooseDiff(Text, Choice) :-
 
 diffMap(1, m).
 diffMap(2, h).
-
-startGame(P1, P2) :-
-	boardSize(Size),
-	initial_state(Size, gameState(TurnNumber, Board, player(P1), player(P2))),
-	display_game(gameState(TurnNumber, Board, player(P1), player(P2))),
-	get_code(_),
-	game_cycle(gameState(TurnNumber, Board, player(P1), player(P2))).
