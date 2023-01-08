@@ -15,9 +15,9 @@ size(9).
 p1_positions([[1,4], [2,4], [3,4], [4,4], [1,6], [2,6], [3,6], [4,6]]).
 p2_positions([[5,4], [7,4], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
 
-% test positions for win
-% p1_positions([[1,1], [2,1], [3,4], [4,4], [1,6], [2,6], [3,6], [4,6]]).
-% p2_positions([[1,3], [2,2], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
+% test positions for win of player 2
+% p1_positions([[1,4], [1,2], [2,4], [3,4], [1,6], [2,6], [3,6], [4,6]]).
+% p2_positions([[1,5], [1,3], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
 
 % change the player turn
 next_player(player_1, player_2).
@@ -37,11 +37,11 @@ path_blocked(X, Y, NewX, NewY) :-
   High is NewX-1,
   Low #=< High, % between needs to have low <= high
   between(Low, High , BetweenX),
-  write('X: '), write(X), nl,
-  write('Y: '), write(Y), nl,
-  write('NewX: '), write(NewX), nl,
-  write('NewY: '), write(NewY), nl,
-  write('BetweenX: '), write(BetweenX), nl,
+  % write('X: '), write(X), nl,
+  % write('Y: '), write(Y), nl,
+  % write('NewX: '), write(NewX), nl,
+  % write('NewY: '), write(NewY), nl,
+  % write('BetweenX: '), write(BetweenX), nl,
   ((p1_positions(P1Positions), member([BetweenX, Y], P1Positions))
   ;
   (p2_positions(P2Positions), member([BetweenX, Y], P2Positions)) ).
@@ -55,11 +55,11 @@ path_blocked(X, Y, NewX, NewY) :-
   High is X-1,
   Low #=< High, % between needs to have low <= high
   between(Low, High, BetweenX),
-  write('X: '), write(X), nl,
-  write('Y: '), write(Y), nl,
-  write('NewX: '), write(NewX), nl,
-  write('NewY: '), write(NewY), nl,
-  write('BetweenX: '), write(BetweenX), nl,
+  % write('X: '), write(X), nl,
+  % write('Y: '), write(Y), nl,
+  % write('NewX: '), write(NewX), nl,
+  % write('NewY: '), write(NewY), nl,
+  % write('BetweenX: '), write(BetweenX), nl,
   ((p1_positions(P1Positions), member([BetweenX, Y], P1Positions))
   ;
   (p2_positions(P2Positions), member([BetweenX, Y], P2Positions)) ).
@@ -73,11 +73,11 @@ path_blocked(X, Y, NewX, NewY) :-
   High is NewY-1,
   Low #=< High, % between needs to have low <= high
   between(Low, High, BetweenY),
-  write('X: '), write(X), nl,
-  write('Y: '), write(Y), nl,
-  write('NewX: '), write(NewX), nl,
-  write('NewY: '), write(NewY), nl,
-  write('BetweenY: '), write(BetweenY), nl,
+  % write('X: '), write(X), nl,
+  % write('Y: '), write(Y), nl,
+  % write('NewX: '), write(NewX), nl,
+  % write('NewY: '), write(NewY), nl,
+  % write('BetweenY: '), write(BetweenY), nl,
  ((p1_positions(P1Positions), member([X, BetweenY], P1Positions))
   ;
   (p2_positions(P2Positions), member([X, BetweenY], P2Positions)) ).
@@ -92,11 +92,11 @@ path_blocked(X, Y, NewX, NewY) :-
   High is Y-1,
   Low #=< High, % between needs to have low <= high
   between(Low, High, BetweenY),
-  write('X: '), write(X), nl,
-  write('Y: '), write(Y), nl,
-  write('NewX: '), write(NewX), nl,
-  write('NewY: '), write(NewY), nl,
-  write('BetweenY: '), write(BetweenY), nl,
+  % write('X: '), write(X), nl,
+  % write('Y: '), write(Y), nl,
+  % write('NewX: '), write(NewX), nl,
+  % write('NewY: '), write(NewY), nl,
+  % write('BetweenY: '), write(BetweenY), nl,
   ((p1_positions(P1Positions), member([X, BetweenY], P1Positions))
   ;
   (p2_positions(P2Positions), member([X, BetweenY], P2Positions)) ).
@@ -418,48 +418,50 @@ player_positions(player_1, Positions) :- p1_positions(Positions).
 player_positions(player_2, Positions) :- p2_positions(Positions).
 
 
-num_pieces_trapped(Player, NumTrapped) :-
-  Player = player_1,
-  p1_positions(Positions), % get the positions of player 1's pieces
-  findall([X, Y], (member([X, Y], Positions), \+ move(Player, X, Y, _, _)), TrappedPositions),
-  length(TrappedPositions, NumTrapped).
+% player(X, Y, P) represents a piece at position (X, Y) belonging to player P
+% P can be either 1 or 2
 
-num_pieces_trapped(Player, NumTrapped) :-
-  Player = player_2,
-  p1_positions(Positions), % get the positions of player 1's pieces
-  findall([X, Y], (member([X, Y], Positions), \+ move(Player, X, Y, _, _)), TrappedPositions),
-  length(TrappedPositions, NumTrapped).
+player(X, Y, player_1) :-
+    p1_positions(Positions),
+    member([X, Y], Positions).
 
-trapped(Player) :-
-  Player = player_1,
-  p1_positions(Positions), % get the positions of player 1's pieces
-  findall([X, Y], (member([X, Y], Positions), \+ move(Player, X, Y, _, _)), TrappedPositions),
-  TrappedPositions \= []. % check if there are any trapped pieces
+player(X, Y, player_2) :-
+    p2_positions(Positions),
+    member([X, Y], Positions).
 
+% Check if the given piece cannot move
+cant_move(X, Y, P) :-
+    player(X, Y, P), % check that the piece belongs to player P
+    \+ (
+        % loop through all positions on the board
+        between(1, 9, X2), between(1, 9, Y2),
+        % check if the current position is reachable from the starting position/piece position
+        move(P,X, Y, X2, Y2)
+    ).
 
-trapped(Player) :-
-  Player = player_2,
-  p2_positions(Positions), % get the positions of player 1's pieces
-  findall([X, Y], (member([X, Y], Positions), \+ move(Player, X, Y, _, _)), TrappedPositions),
-  TrappedPositions \= []. % check if there are any trapped pieces
+% Check if any of player P's pieces cannot move
+player_cant_move(P) :-
+    player(_, _, P), % find a piece belonging to player P
+    cant_move(_, _, P). % check if that piece cannot move
 
-
-% Define the rule for determining if a player has won
-lose(Player) :-
-  trapped(Player). % player wins if they are not trapped and their opponent is
+% Check if the current player has lost by checking if any of their opponent's pieces cannot move
+has_lost(P) :-
+    player_cant_move(P). % check if any of the player pieces cannot move
 
 % Define the rule for deleting an element ( list with pair position) from a list
 delete_old_pos(Elem, [Elem|Tail], Tail).
 delete_old_pos(Elem, [Head|Tail], [Head|NewTail]) :- delete_old_pos(Elem, Tail, NewTail).
 
 play(Player) :-
-  lose(Player),
-  next_player(Player, NextPlayer),
-  write('Player '), write(NextPlayer), write(' wins!'), nl,
-  !. % player wins, stop the game
+
+  has_lost(Player), % check if the current player has lost
+  next_player(Player, NextPlayer), % get the next player because the current player has lost
+  write('Player: '), write(NextPlayer), write(' wins!'), nl,
+  !. % nextPlayer wins, stop the game
 %Define the main game loop
 play(Player) :-
  
+  print_board, nl, nl,
   write('Player '), write(Player), write(', enter your move (X Y NewX NewY): '),
   read(X), read(Y), read(NewX), read(NewY),nl,
   write('Check outside if with move '), nl,
@@ -473,31 +475,39 @@ play(Player) :-
     write('Check after retract '), nl,
     asserta(player_positions(Player, [[NewX,NewY]|NewPositions])),
     next_player(Player, NextPlayer),
-
+    write(Player), write('turn board final positions: '), nl,
+    print_board,
+    nl, nl,
     play(NextPlayer) % continue with the next player
   ; % otherwise
   write('Invalid move, try again.'), nl,
   play(Player) % if the move is not valid, ask for a new move from the same player
   ).
 
-display_board(Board) :-
-  write(' 1 2 3 4 5 6 7 8 9'), nl,
-  display_board_rows(Board, 1).
 
-display_board_rows([], _).
-display_board_rows([Row|Rows], RowNum) :-
-  write(RowNum), write(' '),
-  display_board_row(Row),
-  write(nl),
-  NextRowNum is RowNum + 1,
-  display_board_rows(Rows, NextRowNum).
+print_board([]).
+print_board([(X, Y, Value)|Tail]) :-
+    print_row(1, [(X, Y, Value)|Tail]),
+    print_board(Tail).
 
-display_board_row([]) :- write('').
-display_board_row([Piece|Pieces]) :-
-  write(Piece), write(' '),
-  display_board_row(Pieces).
+print_row(_, []).
+print_row(Y, [(X, Y, Value)|Tail]) :-
+    write(Value), write(' '),
+    print_row(Y, Tail).
+print_row(Y, [(X, Z, _)|Tail]) :-
+    Y \= Z,
+    print_row(Y, Tail).
+
+substitute([], _, _, []).
+substitute([(X, Y, Value)|Tail], Positions, NewValue, [(X, Y, NewValue)|NewTail]) :-
+    member((X, Y), Positions),
+    substitute(Tail, Positions, NewValue, NewTail).
+substitute([(X, Y, Value)|Tail], Positions, NewValue, [(X, Y, Value)|NewTail]) :-
+    \+ member((X, Y), Positions),
+    substitute(Tail, Positions, NewValue, NewTail).
+
 % Start the game
-:- play(player_1).
+% :- play(player_1).
 
 
 
