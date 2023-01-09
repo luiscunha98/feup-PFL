@@ -3,17 +3,20 @@
 :- use_module(library(clpfd)).
 :- use_module(library(lists)).
 :- use_module(library(between)).
+:- use_module(library(random)).
+:- use_module(library(aggregate)).
 
 % Define the size of the board
 size(9).
 :- dynamic p1_positions/1.
 :- dynamic p2_positions/1.
 :- dynamic player_positions/2.
+:- dynamic position/3.
 
 
 % Define the initial positions of the pieces
 p1_positions([[1,4], [2,4], [3,4], [4,4], [1,6], [2,6], [3,6], [4,6]]).
-p2_positions([[5,4], [7,4], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
+p2_positions([[6,4], [7,4], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
 
 % test positions for win of player 2
 % p1_positions([[1,4], [1,2], [2,4], [3,4], [1,6], [2,6], [3,6], [4,6]]).
@@ -36,6 +39,7 @@ path_blocked(X, Y, NewX, NewY) :-
   Low is X+1, % 
   High is NewX-1,
   Low #=< High, % between needs to have low <= high
+  board_up_down_lines_rule(NewX,NewY), % NewX, NewY not a impossible move
   between(Low, High , BetweenX),
   % write('X: '), write(X), nl,
   % write('Y: '), write(Y), nl,
@@ -54,6 +58,7 @@ path_blocked(X, Y, NewX, NewY) :-
   Low is NewX+1,
   High is X-1,
   Low #=< High, % between needs to have low <= high
+  board_up_down_lines_rule(NewX,NewY), % NewX, NewY not a impossible move
   between(Low, High, BetweenX),
   % write('X: '), write(X), nl,
   % write('Y: '), write(Y), nl,
@@ -72,6 +77,7 @@ path_blocked(X, Y, NewX, NewY) :-
   Low is Y+1,
   High is NewY-1,
   Low #=< High, % between needs to have low <= high
+  board_up_down_lines_rule(NewX,NewY), % NewX, NewY not a impossible move
   between(Low, High, BetweenY),
   % write('X: '), write(X), nl,
   % write('Y: '), write(Y), nl,
@@ -91,19 +97,13 @@ path_blocked(X, Y, NewX, NewY) :-
   Low is NewY+1,
   High is Y-1,
   Low #=< High, % between needs to have low <= high
-  between(Low, High, BetweenY),
-  % write('X: '), write(X), nl,
-  % write('Y: '), write(Y), nl,
-  % write('NewX: '), write(NewX), nl,
-  % write('NewY: '), write(NewY), nl,
-  % write('BetweenY: '), write(BetweenY), nl,
-  ((p1_positions(P1Positions), member([X, BetweenY], P1Positions))
-  ;
-  (p2_positions(P2Positions), member([X, BetweenY], P2Positions)) ).
-
   
 
-
+% True if the position is not a position that should be blocked to any player
+board_up_down_lines_rule(NewX,NewY) :-
+   % Check if the new position is one of the positions that should be blocked to any player
+  \+ ( member(NewX, [1, 2, 3]), member(NewY, [1, 2, 3, 7, 8, 9])
+    ;  member(NewX, [7, 8, 9]), member(NewY, [1, 2, 3, 7, 8, 9]) ).
 
 
 % Define the list of valid moves for a piece
@@ -395,21 +395,23 @@ move(player_1, X, Y, NewX, NewY) :-
   NewX #=< 9,
   NewY #>= 1,
   NewY #=< 9,
+ \+ board_up_down_lines_rule(NewX,NewY),
+  valid_move(X, Y, NewX, NewY),
   p1_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
-  valid_move(X, Y, NewX, NewY),
-   write('Check inside move predicate '), nl,
   p2_positions(OpponentPositions),
   \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
+
+ 
 move(player_2, X, Y, NewX, NewY) :-
   NewX #>= 1,
   NewX #=< 9,
   NewY #>= 1,
   NewY #=< 9,
+  \+ board_up_down_lines_rule(NewX,NewY),
+  valid_move(X, Y, NewX, NewY),
   p2_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
-  valid_move(X, Y, NewX, NewY),
-  
   p1_positions(OpponentPositions),
   \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
 
@@ -461,7 +463,7 @@ play(Player) :-
 %Define the main game loop
 play(Player) :-
  
-  print_board, nl, nl,
+ 
   write('Player '), write(Player), write(', enter your move (X Y NewX NewY): '),
   read(X), read(Y), read(NewX), read(NewY),nl,
   write('Check outside if with move '), nl,
@@ -476,7 +478,7 @@ play(Player) :-
     asserta(player_positions(Player, [[NewX,NewY]|NewPositions])),
     next_player(Player, NextPlayer),
     write(Player), write('turn board final positions: '), nl,
-    print_board,
+    get_current_board,
     nl, nl,
     play(NextPlayer) % continue with the next player
   ; % otherwise
@@ -485,29 +487,64 @@ play(Player) :-
   ).
 
 
-print_board([]).
-print_board([(X, Y, Value)|Tail]) :-
-    print_row(1, [(X, Y, Value)|Tail]),
-    print_board(Tail).
+% To iterate through list and perform a goal on each element
+% forall(Xs, Goal) :-
+%     maplist(Goal, Xs).
 
-print_row(_, []).
-print_row(Y, [(X, Y, Value)|Tail]) :-
-    write(Value), write(' '),
-    print_row(Y, Tail).
-print_row(Y, [(X, Z, _)|Tail]) :-
-    Y \= Z,
-    print_row(Y, Tail).
 
-substitute([], _, _, []).
-substitute([(X, Y, Value)|Tail], Positions, NewValue, [(X, Y, NewValue)|NewTail]) :-
-    member((X, Y), Positions),
-    substitute(Tail, Positions, NewValue, NewTail).
-substitute([(X, Y, Value)|Tail], Positions, NewValue, [(X, Y, Value)|NewTail]) :-
-    \+ member((X, Y), Positions),
-    substitute(Tail, Positions, NewValue, NewTail).
+
+% Initialize the board
+% Initialize the board
+
+
+% Set the positions of player 1 on the board
+% Define the set_p1_positions/1 predicate
+set_p1_positions([]).
+set_p1_positions([[X, Y]|Tail]) :-
+    retract(position(X, Y, _)),
+    assertz(position(X, Y, 'g')),
+    set_p1_positions(Tail).
+
+% Define the set_p2_positions/1 predicate
+set_p2_positions([]).
+set_p2_positions([[X, Y]|Tail]) :-
+    retract(position(X, Y, _)),
+    assertz(position(X, Y, 'w')),
+    set_p2_positions(Tail).
+
+init_board :-
+    retractall(position(_, _, _)),
+    forall(between(1, 9, X),
+           (forall(between(1, 9, Y),
+                   (   ((X = 1 ; X = 2 ; X = 3), (Y = 1 ; Y = 2 ; Y = 3 ; Y = 7 ; Y = 8 ; Y = 9) )
+                   ->  assertz(position(X, Y, ' '))
+                   ;  ( (X = 7 ; X = 8 ; X = 9), (Y = 1 ; Y = 2 ; Y = 3 ; Y = 7 ; Y = 8 ; Y = 9) )
+                   ->  assertz(position(X, Y, ' '))
+                   ;
+                   assertz(position(X, Y, '.'))
+                   )))).
+% Display the board
+% Display the board
+display_board :-
+    forall(between(1, 9, X),
+           (forall(between(1, 9, Y),
+                   (position(X, Y, P),
+                    write(P),
+                    write(' '))),
+            nl)).
+% Get the current board
+get_current_board :-
+  init_board,
+  p1_positions(P1Positions),
+  p2_positions(P2Positions),
+  set_p1_positions(P1Positions),
+  set_p2_positions(P2Positions),
+  display_board.
 
 % Start the game
+% :-init_board.
 % :- play(player_1).
 
 
 
+  
