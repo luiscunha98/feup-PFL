@@ -91,19 +91,20 @@ path_blocked(X, Y, NewX, NewY) :-
 % left move
 path_blocked(X, Y, NewX, NewY) :-
   integer(X), integer(Y), integer(NewX), integer(NewY),
-  write('test left move'), nl,
   X #= NewX,
   Y #> NewY,
   Low is NewY+1,
   High is Y-1,
   Low #=< High, % between needs to have low <= high
-  
+  ((p1_positions(P1Positions), member([X, BetweenY], P1Positions))
+  ;
+  (p2_positions(P2Positions), member([X, BetweenY], P2Positions)) ).
 
 % True if the position is not a position that should be blocked to any player
 board_up_down_lines_rule(NewX,NewY) :-
    % Check if the new position is one of the positions that should be blocked to any player
-  \+ ( member(NewX, [1, 2, 3]), member(NewY, [1, 2, 3, 7, 8, 9])
-    ;  member(NewX, [7, 8, 9]), member(NewY, [1, 2, 3, 7, 8, 9]) ).
+  ( member(NewX, [1, 2, 3]), member(NewY, [1, 2, 3, 7, 8, 9])
+    ;  member(NewX, [7, 8, 9]), member(NewY, [1, 2, 3, 7, 8, 9]) ) -> fail ; true.
 
 
 % Define the list of valid moves for a piece
@@ -166,224 +167,75 @@ valid_move(X, Y, NewX, NewY) :-
 
 
 
-% % circular special wana moves
+% edge_move(X, Y, NewX, NewY):-
+% ((X #= NewX), (NewY #= Y));
+% (Y #= NewY), (NewX #= NewY).
 
-% % move circular from row 1
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from row 1
-%   ( X #= 1, Y #=> 4, Y #=< 6 ), % from row 1
-%   ((NewX #= 4; NewX #= 5; NewX #= 6), (NewY#= 9 ; NewY #= 1)); % left and right
-%   (NewX #=9,( NewY #=4; NewY #=5, NewY #=6)) ; % down
-%   (NewX #= 1, NewY #=< 6, NewY #=> 4), % right
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
+% move "circular" between row 3, row 7 , column 3 and column 7
+special_move(X, Y, NewX, NewY) :-
+  board_up_down_lines_rule(NewX,NewY), (
+  ((X #= 3 ; X #= 9), (NewY #= 3 ; NewY #= 7));
+  ((Y #= 3 ; Y #= 7), (NewX #= 3 ; NewX #= 7));
+  ((X #= 3 ; X #= 9), (NewX #= 3 ; NewX #= 7));
+  ((Y #= 3 ; Y #= 7), (NewY #= 3 ; NewY #= 7));
 
+  ((X #= 1 ; X #= 9), (NewY #= 1 ; NewY #= 9));
+  ((Y #= 1 ; Y #= 9), (NewX #= 1 ; NewX #= 9));
+  ((X #= 1 ; X #= 9), (NewX #= 1 ; NewX #= 9));
+  ((Y #= 1 ; Y #= 9), (NewY #= 1 ; NewY #= 9));
 
-% % move circular from row 9
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from row 9
-%   ( X #= 9, Y #=> 4, Y #=< 6 ), % from row 9
-%   ((NewX #= 4; NewX #= 5; NewX #= 6), (NewY #= 9 ; NewY #= 1)); % left and right
-%   (NewX #=9,( NewY #=4; NewY #=5, NewY #=6)) ; % down
-%   (NewX #= 1, NewY #=< 6, NewY #=> 4), % up
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
+  
+  ((X #= 2 ; X #= 8), (NewY #= 2 ; NewY #= 8));
+  ((Y #= 2 ; Y #= 8), (NewX #= 2 ; NewX #= 8));
+  ((X #= 2 ; X #= 8), (NewX #= 2 ; NewX #= 8));
+  ((Y #= 2 ; Y #= 8), (NewY #= 2 ; NewY #= 8)));
+  edge_move(X, Y, NewX, NewY).
 
+% check if the path is blocked for the special moves
+% check if the path is blocked for the special moves
+spec_path_blocked(X, Y, NewX, NewY) :-
+    X #= NewX,
+    Y #< NewY,
+    Y1 #= Y + 1,
+    Y1 #< NewY,
+    p1_positions(P1Positions),
+    p2_positions(P2Positions),
+    \+ member([X, Y1], P1Positions),
+    \+ member([X, Y1], P2Positions),
+    spec_path_blocked(X, Y1, NewX, NewY).
 
-% % move circular from row 2
+spec_path_blocked(X, Y, NewX, NewY) :-
+    X #= NewX,
+    Y #> NewY,
+    Y1 #= Y - 1,
+    Y1 #> NewY,
+    p1_positions(P1Positions),
+    p2_positions(P2Positions),
+    \+ member([X, Y1], P1Positions),
+    \+ member([X, Y1], P2Positions),
+    spec_path_blocked(X, Y1, NewX, NewY).
 
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from row 2
-%   ( X #= 2, Y #=> 4, Y #=< 6 ), % from row 2
-%   ((NewX #= 4; NewX #= 5; NewX #= 6), (NewY #= 8 ; NewY #= 2)); % left and right
-%   (NewX #=8,( NewY #=4; NewY #=5, NewY #=6)) ; % down
-%   (NewX #= 2, NewY #=< 6, NewY #=> 4), % up
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
+spec_path_blocked(X, Y, NewX, NewY) :-
+    X #< NewX,
+    Y #= NewY,
+    X1 #= X + 1,
+    X1 #< NewX,
+    p1_positions(P1Positions),
+    p2_positions(P2Positions),
+    \+ member([X1, Y], P1Positions),
+    \+ member([X1, Y], P2Positions),
+    spec_path_blocked(X1, Y, NewX, NewY).
 
-
-% % move circular from row 8
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from row 8
-%   ( X #= 8, Y #=> 4, Y #=< 6 ), % from row 8
-%   ((NewX #= 4; NewX #= 5; NewX #= 6), (NewY #= 8 ; NewY #= 2)); % left and right
-%   (NewX #=8,( NewY #=4; NewY #=5, NewY #=6)) ; % down
-%   (NewX #= 2, NewY #=< 6, NewY #=> 4), % up
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
-
-% % move circular from row 7
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from row 7
-%   ( X #= 7, Y #=> 4, Y #=< 6 ), % from row 7
-%   ((NewX #= 4; NewX #= 5; NewX #= 6), (NewY #= 7 ; NewY #= 3)); % left and right
-%   (NewX #=7,( NewY #=4; NewY #=5, NewY #=6)) ; % down
-%   (NewX #= 3, NewY #=< 6, NewY #=> 4), % up
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
-
-% % move circular from row 3
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from row 3
-%   ( X #= 3, Y #=> 4, Y #=< 6 ), % from row 3
-%   ((NewX #= 4; NewX #= 5; NewX #= 6), (NewY #= 7 ; NewY #= 3)); % left and right
-%   (NewX #=7,( NewY #=4; NewY #=5, NewY #=6)) ; % down
-%   (NewX #= 3, NewY #=< 6, NewY #=> 4), % up
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
-
-% % the same as above for rows 1,2,3, 7,8,9 but now for columns 1,2,3, 7,8,9
-
-% % move circular from column 1
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from column 1
-%   ( Y #= 1, X #=> 4, X #=< 6 ), % from column 1
-%   ((NewY #= 4; NewY #= 5; NewY #= 6), (NewX #= 9 ; NewX #= 1)); % up and down
-%   (NewY #=9,( NewX #=4; NewX #=5, NewX #=6)) ; % right
-%   (NewY #= 1, NewX #=< 6, NewX #=> 4), % left
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
-
-% % move circular from column 9
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from column 9
-%   ( Y #= 9, X #=> 4, X #=< 6 ), % from column 9
-%   ((NewY #= 4; NewY #= 5; NewY #= 6), (NewX #= 9 ; NewX #= 1)); % up and down
-%   (NewY #=9,( NewX #=4; NewX #=5, NewX #=6)) ; % right
-%   (NewY #= 1, NewX #=< 6, NewX #=> 4), % left
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
-
-% % move circular from column 7
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from column 7
-%   ( Y #= 7, X #=> 4, X #=< 6 ), % from column 7
-%   ((NewY #= 4; NewY #= 5; NewY #= 6), (NewX #= 7 ; NewX #= 3)); % up and down
-%   (NewY #=7,( NewX #=4; NewX #=5, NewX #=6)) ; % right
-%   (NewY #= 3, NewX #=< 6, NewX #=> 4), % left
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
-
-
-% % move circular from column 3
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from column 3
-%   ( Y #= 3, X #=> 4, X #=< 6 ), % from column 3
-%   ((NewY #= 4; NewY #= 5; NewY #= 6), (NewX #= 7 ; NewX #= 3)); % up and down
-%   (NewY #=7,( NewX #=4; NewX #=5, NewX #=6)) ; % right
-%   (NewY #= 3, NewX #=< 6, NewX #=> 4), % left
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
-
-% % move circular from column 2
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from column 2
-%   ( Y #= 2, X #=> 4, X #=< 6 ), % from column 2
-%   ((NewY #= 4; NewY #= 5; NewY #= 6), (NewX #= 8 ; NewX #= 2)); % up and down
-%   (NewY #=8,( NewX #=4; NewX #=5, NewX #=6)) ; % right
-%   (NewY #= 2, NewX #=< 6, NewX #=> 4), % left
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
-
-% % move circular from column 8
-
-% valid_move(X, Y, NewX, NewY) :-
-%   size(S),
-%   X#=> 1, X#=< S , X > 0,
-%   NewX #=> 1, NewX #=< S,  
-%   % circular movement from column 8
-%   ( Y #= 8, X #=> 4, X #=< 6 ), % from column 8
-%   ((NewY #= 4; NewY #= 5; NewY #= 6), (NewX #= 8 ; NewX #= 2)); % up and down
-%   (NewY #=8,( NewX #=4; NewX #=5, NewX #=6)) ; % right
-%   (NewY #= 2, NewX #=< 6, NewX #=> 4), % left
-%   p1_positions(P1Positions),
-%   p2_positions(P2Positions),
-%   \+ member([NewX, NewY], P1Positions),
-%   \+ member([NewX, NewY], P2Positions),
-%    \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
-
+spec_path_blocked(X, Y, NewX, NewY) :-
+    X #> NewX,
+    Y #= NewY,
+    X1 #= X - 1,
+    X1 #> NewX,
+    p1_positions(P1Positions),
+    p2_positions(P2Positions),
+    \+ member([X1, Y], P1Positions),
+    \+ member([X1, Y], P2Positions),
+    spec_path_blocked(X1, Y, NewX, NewY).
 
 
 % movements around edges
@@ -395,25 +247,47 @@ move(player_1, X, Y, NewX, NewY) :-
   NewX #=< 9,
   NewY #>= 1,
   NewY #=< 9,
- \+ board_up_down_lines_rule(NewX,NewY),
-  valid_move(X, Y, NewX, NewY),
+  board_up_down_lines_rule(NewX,NewY),
+  (
+  valid_move(X, Y, NewX, NewY)->
   p1_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
   p2_positions(OpponentPositions),
-  \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
-
+  \+ member([NewX,NewY], OpponentPositions); % the new position must be empty
+  special_move(X, Y, NewX, NewY),
+  spec_path_blocked(X, Y, NewX, NewY),
+  p1_positions(Positions),
+  member([X,Y], Positions), % find the position of the piece
+  p2_positions(OpponentPositions),
+  \+ member([NewX,NewY], OpponentPositions) ). % the new position must be empty
  
 move(player_2, X, Y, NewX, NewY) :-
   NewX #>= 1,
   NewX #=< 9,
   NewY #>= 1,
   NewY #=< 9,
-  \+ board_up_down_lines_rule(NewX,NewY),
-  valid_move(X, Y, NewX, NewY),
+  board_up_down_lines_rule(NewX,NewY),
+  (
+  valid_move(X, Y, NewX, NewY)->
   p2_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
   p1_positions(OpponentPositions),
-  \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
+  \+ member([NewX,NewY], OpponentPositions);
+  special_move(X, Y, NewX, NewY),
+  spec_path_blocked(X, Y, NewX, NewY),
+  p2_positions(Positions),
+  member([X,Y], Positions), % find the position of the piece
+  p1_positions(OpponentPositions),
+  \+ member([NewX,NewY], OpponentPositions)
+  ). % the new position must be empty
+
+check_move_val(Player, X, Y, NewX, NewY) :-
+  
+  NewX #>= 1,
+  NewX #=< 9,
+  NewY #>= 1,
+  NewY #=< 9,
+  board_up_down_lines_rule(NewX,NewY),
 
 % Get the positions of a player
 player_positions(player_1, Positions) :- p1_positions(Positions).
@@ -486,6 +360,10 @@ play(Player) :-
   play(Player) % if the move is not valid, ask for a new move from the same player
   ).
 
+%play predicate for the random move player
+
+
+
 
 % To iterate through list and perform a goal on each element
 % forall(Xs, Goal) :-
@@ -540,6 +418,31 @@ get_current_board :-
   set_p1_positions(P1Positions),
   set_p2_positions(P2Positions),
   display_board.
+
+
+% Select a random element from a list
+select_random_element(List, Element) :-
+  length(List, Length),
+  random(0, Length, Index),
+  nth0(Index, List, Element).
+
+% Simulated player that plays a random possible move
+play_random_move(Player, NewX, NewY) :-
+  % Retrieve the current player positions
+  player_positions(Player, Positions),
+  % Find all possible moves for the current player
+  findall([X, Y, NewX, NewY], (member([X, Y], Positions), move(X, Y, NewX, NewY)), PossibleMoves),
+  % Select a random element from the list of possible moves
+  select_random_element(PossibleMoves, [_, _, NewX, NewY]),
+  delete_old_pos([X,Y], Positions, NewPositions),
+  retractall(player_positions(Player, _)),
+  % Remove the old position of the piece
+  % Add the new position of the piece
+  asserta(player_positions(Player, [[NewX,NewY]|NewPositions])).
+
+
+ 
+
 
 % Start the game
 % :-init_board.
