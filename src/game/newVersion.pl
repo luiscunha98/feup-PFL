@@ -28,6 +28,7 @@ next_player(player_2, player_1).
 % Define the initial positions of the pieces
 p1_positions([[1,4], [2,4], [3,4], [4,4], [1,6], [2,6], [3,6], [4,6]]).
 p2_positions([[6,4], [7,4], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
+
 % %X=1;X=9 special move
 % lineforward1([[1,4],[4,1],[5,1],[6,1],[9,4],[9,5],[9,6],[6,9],[5,9],[4,9],[1,6],[1,5]]).
 
@@ -284,11 +285,7 @@ path_blocked(X, Y, NewX, NewY) :-
   Low #=< High, % between needs to have low <= high
   board_up_down_lines_rule(NewX,NewY), % NewX, NewY not a impossible move
   between(Low, High , BetweenX),
-  % write('X: '), write(X), nl,
-  % write('Y: '), write(Y), nl,
-  % write('NewX: '), write(NewX), nl,
-  % write('NewY: '), write(NewY), nl,
-  % write('BetweenX: '), write(BetweenX), nl,
+  
   ((p1_positions(P1Positions), member([BetweenX, Y], P1Positions))
   ;
   (p2_positions(P2Positions), member([BetweenX, Y], P2Positions)) ).
@@ -303,11 +300,7 @@ path_blocked(X, Y, NewX, NewY) :-
   Low #=< High, % between needs to have low <= high
   board_up_down_lines_rule(NewX,NewY), % NewX, NewY not a impossible move
   between(Low, High, BetweenX),
-  % write('X: '), write(X), nl,
-  % write('Y: '), write(Y), nl,
-  % write('NewX: '), write(NewX), nl,
-  % write('NewY: '), write(NewY), nl,
-  % write('BetweenX: '), write(BetweenX), nl,
+ 
   ((p1_positions(P1Positions), member([BetweenX, Y], P1Positions))
   ;
   (p2_positions(P2Positions), member([BetweenX, Y], P2Positions)) ).
@@ -359,6 +352,7 @@ valid_move(X, Y, NewX, NewY) :-
   NewY #= Y,
   NewX #> 0, NewX #=< S,
   NewY #> 0, NewY #=< S,
+  board_up_down_lines_rule(NewX,NewY),
   p1_positions(P1Positions),
   p2_positions(P2Positions),
   \+ member([NewX, NewY], P1Positions),
@@ -373,6 +367,7 @@ valid_move(X, Y, NewX, NewY) :-
   NewY #= Y,
   NewX #> 0, NewX #=< S,
   NewY #> 0, NewY #=< S,
+  board_up_down_lines_rule(NewX,NewY),
   p1_positions(P1Positions),
   p2_positions(P2Positions),
   \+ member([NewX, NewY], P1Positions),
@@ -387,6 +382,7 @@ valid_move(X, Y, NewX, NewY) :-
   NewY #> Y,
   NewX #> 0, NewX #=< S,
   NewY #> 0, NewY #=< S,
+  board_up_down_lines_rule(NewX,NewY),
   p1_positions(P1Positions),
   p2_positions(P2Positions),
   \+ member([NewX, NewY], P1Positions),
@@ -403,6 +399,7 @@ valid_move(X, Y, NewX, NewY) :-
   NewY #> 0, NewY #=< S,
   p1_positions(P1Positions),
   p2_positions(P2Positions),
+  board_up_down_lines_rule(NewX,NewY),
   \+ member([NewX, NewY], P1Positions),
   \+ member([NewX, NewY], P2Positions),
   \+ path_blocked(X, Y, NewX, NewY). % check if the path is blocked
@@ -436,47 +433,36 @@ valid_move(X, Y, NewX, NewY) :-
 
 % movements around edges
 
-
 % Define the rules for moving a piece
 move(player_1, X, Y, NewX, NewY) :-
   NewX #>= 1,
   NewX #=< 9,
   NewY #>= 1,
   NewY #=< 9,
-  board_up_down_lines_rule(NewX,NewY),
-  (
-  valid_move(X, Y, NewX, NewY)->
   p1_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
+  valid_move(X, Y, NewX, NewY),
+   write('Check inside move predicate '), nl,
   p2_positions(OpponentPositions),
-  \+ member([NewX,NewY], OpponentPositions); % the new position must be empty
-
-  p1_positions(Positions),
-  member([X,Y], Positions), % find the position of the piece
-  p2_positions(OpponentPositions),
-  \+ member([NewX,NewY], OpponentPositions) ). % the new position must be empty
- 
+  \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
 move(player_2, X, Y, NewX, NewY) :-
   NewX #>= 1,
   NewX #=< 9,
   NewY #>= 1,
   NewY #=< 9,
-  board_up_down_lines_rule(NewX,NewY),
-  (
-  valid_move(X, Y, NewX, NewY)->
   p2_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
+  valid_move(X, Y, NewX, NewY),
+  
   p1_positions(OpponentPositions),
-  \+ member([NewX,NewY], OpponentPositions);
-  p2_positions(Positions),
-  member([X,Y], Positions), % find the position of the piece
-  p1_positions(OpponentPositions),
-  \+ member([NewX,NewY], OpponentPositions)
-  ). % the new position must be empty
+  \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
+
 
 % Get the positions of a player
 player_positions(player_1, Positions) :- p1_positions(Positions).
 player_positions(player_2, Positions) :- p2_positions(Positions).
+player_positions(cl_easy, Positions) :- p2_positions(Positions).
+
 
 
 % player(X, Y, P) represents a piece at position (X, Y) belonging to player P
@@ -489,6 +475,10 @@ player(X, Y, player_1) :-
 player(X, Y, player_2) :-
     p2_positions(Positions),
     member([X, Y], Positions).
+
+player(X,Y, cl_easy) :-
+    p2_positions(Positions),
+    member([X,Y], Positions).
 
 % Check if the given piece cannot move
 cant_move(X, Y, P) :-
@@ -545,11 +535,53 @@ play(Player) :-
   play(Player) % if the move is not valid, ask for a new move from the same player
   ).
 
+next_player_cl_easy(player_1, cl_easy).
+next_player_cl_easy(cl_easy, player_1).
 %play predicate for the random move player
 
+play2(Player) :-
+ 
+ (Player = player_1,
+  write('Player '), write(Player), write(', enter your move (X Y NewX NewY): '),
+  read(X), read(Y), read(NewX), read(NewY),nl,
+  (move(Player, X, Y, NewX, NewY) -> % if the move is valid
+    write('Check inside if with move '), nl,
+    player_positions(Player, Positions),
+    delete_old_pos([X,Y], Positions, NewPositions), % remove the old position of the piece
+    write('Check new positions: '), write(NewPositions), nl,
+    write('Check old Positions: '), write(Positions), nl,
+    retractall(player_positions(Player, _)),
+    write('Check after retract '), nl,
+    asserta(player_positions(Player, [[NewX,NewY]|NewPositions])),
+    next_player_cl_easy(Player, NextPlayer),
+    write(Player), write('turn board final positions: '), nl,
+    get_current_board,
+    nl, nl,
+    play(NextPlayer) % continue with the next player
+  ; % otherwise
+  write('Invalid move, try again.'), nl,
+  play2(Player) % if the move is not valid, ask for a new move from the same player
+  )
+ ); 
+    Player = cl_easy, 
+    play_random_move(Player, X, Y,NewX,NewY), 
+    retract(player_positions(Player, Positions)),
+    delete(Positions, [X, Y], NewPositions),
+    append(NewPositions, [[NewX, NewY]], UpdatedPositions),
+    asserta(player_positions(Player, UpdatedPositions)),
+    % change the current player
+    next_player(Player, NextPlayer),
+    get_current_board,
+    
+    play2(NextPlayer).
 
 
+play2(Player) :-
 
+  has_lost(Player), % check if the current player has lost
+  next_player_cl_easy(Player, NextPlayer), % get the next player because the current player has lost
+  write('Player: '), write(NextPlayer), write(' wins!'), nl,
+  !. % nextPlayer wins, stop the game
 % To iterate through list and perform a goal on each element
 % forall(Xs, Goal) :-
 %     maplist(Goal, Xs).
@@ -604,26 +636,19 @@ get_current_board :-
   set_p2_positions(P2Positions),
   display_board.
 
+% Computer player level easy
+play_random_move(Player, X, Y, NewX, NewY) :-
+    player_positions(Player, Positions),
+    member([X, Y], Positions),
+    findall([NewX,NewY], valid_move(X, Y, NewX, NewY), NewPositions),
+    random_member([NewX, NewY], NewPositions).
 
-% % Select a random element from a list
-% select_random_element(List, Element) :-
-%   length(List, Length),
-%   random(0, Length, Index),
-%   nth0(Index, List, Element).
 
-% % Simulated player that plays a random possible move
-% play_random_move(Player, NewX, NewY) :-
-%   % Retrieve the current player positions
-%   player_positions(Player, Positions),
-%   % Find all possible moves for the current player
-%   findall([X, Y, NewX, NewY], (member([X, Y], Positions), move(X, Y, NewX, NewY)), PossibleMoves),
-%   % Select a random element from the list of possible moves
-%   select_random_element(PossibleMoves, [_, _, NewX, NewY]),
-%   delete_old_pos([X,Y], Positions, NewPositions),
-%   retractall(player_positions(Player, _)),
-%   % Remove the old position of the piece
-%   % Add the new position of the piece
-%   asserta(player_positions(Player, [[NewX,NewY]|NewPositions])).
+random_member(List, Member) :-
+    length(List, Length),
+    random(1, Length, Index),
+    nth1(Index, List, Member).
+
 
 
  

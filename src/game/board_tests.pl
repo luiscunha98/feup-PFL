@@ -7,7 +7,7 @@
 
 p1_positions([[1,4], [2,4], [3,5], [3,4], [4,5], [2,6], [3,6], [4,6]]).
 p2_positions([[1,5], [6,9], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
-
+cl_easy([[1,4], [2,4], [3,5], [3,4], [4,5], [2,6], [3,6], [4,6]]).
 
 test_move :-
     
@@ -23,7 +23,14 @@ test_move :-
     \+move(player_1, 1, 4, 1, 5), % invalid move, piece cannot move to a opponent piece space
     \+move(player_1, 1, 4,2, 4),nl. % invalid move, piece cannot move to a opponent piece space
 
-% test special move
+
+
+test_computer_level_easy:-
+        
+        write('Testing computer_level_easy/1: '), nl,
+        computer_level_easy(player_1,), % player 1 has lost
+        \+computer_level_easy(player_2). % player 2 has won
+
 
 
  
