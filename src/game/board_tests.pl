@@ -23,15 +23,11 @@ test_move :-
     \+move(player_1, 1, 4, 1, 5), % invalid move, piece cannot move to a opponent piece space
     \+move(player_1, 1, 4,2, 4),nl. % invalid move, piece cannot move to a opponent piece space
 
-% test_circular_move :-
+% test special move
 
-        
-%         write('Testing circular_move/5: '), nl,
-%         circular_move(player_1, 1, 4, 4, 1), % valid move
-%         circular_move(player_1, 4, 1, 9, 4), % valid move
-%         circular_move(player_2, 4, 9, 9, 5), % valid move
-%         circular_move(player_2, 9,5 , 1, 5). % valid move
-        
+
+ 
+
 test_board_up_down_lines_rule:-
     
     write('Testing test_board_up_down_lines_rule/4: '), nl,
@@ -64,7 +60,13 @@ test_player_trapped_lost:-
     
     has_lost(player_1), % player 1 has lost
     \+has_lost(player_2). % player 2 has won
+    
 
+
+test_path_blocked_spec:-
+    write('Testing path_blocked/3 for special moves: '), nl,
+    path_blocked([1,4], [9,5],p2_positions).
+    
 
 test_init_board :-
     
@@ -77,21 +79,20 @@ test_display_board :-
     get_current_board.
 
 
-test_random_move :-
+% test_random_move :-
     
-    write('Testing random_move/1: '), nl,
-   play_random_move
+%     write('Testing random_move/1: '), nl,
+%     play_random_move.
 
-% run_all_tests:-
+run_all_tests:-
 
-%     test_board_up_down_lines_rule,
-%     test_path_blocked,
-%     test_marble_cant_move,
-%     test_player_trapped_lost,
-%     test_init_board,
-%     test_display_board,
-%     test_move,
-%     write('All tests passed!'), nl.
+    test_board_up_down_lines_rule,
+    test_path_blocked,
+    test_player_trapped_lost,
+    test_init_board,
+    test_display_board,
+    test_move,
+    write('All tests passed!'), nl.
 
-% % Run all tests
-% :- run_all_tests.
+% Run all tests
+:- run_all_tests.

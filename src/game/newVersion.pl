@@ -5,6 +5,8 @@
 :- use_module(library(between)).
 :- use_module(library(random)).
 :- use_module(library(aggregate)).
+:- use_module(library(ugraphs)).
+
 
 % Define the size of the board
 size(9).
@@ -14,9 +16,6 @@ size(9).
 :- dynamic position/3.
 
 
-% Define the initial positions of the pieces
-p1_positions([[1,4], [2,4], [3,4], [4,4], [1,6], [2,6], [3,6], [4,6]]).
-p2_positions([[6,4], [7,4], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
 
 % test positions for win of player 2
 % p1_positions([[1,4], [1,2], [2,4], [3,4], [1,6], [2,6], [3,6], [4,6]]).
@@ -26,10 +25,254 @@ p2_positions([[6,4], [7,4], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
 next_player(player_1, player_2).
 next_player(player_2, player_1).
 
-% verificar path blocked conditions pois está a incluir 1,2 como estando no caminho de um movimento de 1,1 para 1,2 ou 1,3
-% this conditions like:  Low is X+1, % 
-%   High is NewX-1, is not working
-% Define the rule for checking if the path is blocked
+% Define the initial positions of the pieces
+p1_positions([[1,4], [2,4], [3,4], [4,4], [1,6], [2,6], [3,6], [4,6]]).
+p2_positions([[6,4], [7,4], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
+% %X=1;X=9 special move
+% lineforward1([[1,4],[4,1],[5,1],[6,1],[9,4],[9,5],[9,6],[6,9],[5,9],[4,9],[1,6],[1,5]]).
+
+% lineBack1([[1,4],[1,5],[1,6],[4,9],[5,9],[6,9],[9,6],[9,5],[9,4],[6,1],[5,1],[4,1]]).
+
+% %X=2;X=8 special move
+% lineforward2([[2,4],[4,2],[5,2],[6,2],[8,4],[8,5],[8,6],[6,8],[5,8],[4,8],[2,6],[2,5]]).
+% lineBack2([[2,4],[2,5],[2,6],[4,8],[5,8],[6,8],[8,6],[8,5],[8,4],[6,2],[5,2],[4,2]]).
+
+% %X=3;X=7 special move
+
+% lineforward3([[3,4],[4,3],[5,3],[6,3],[7,4],[7,5],[7,6],[6,7],[5,7],[4,7],[3,6],[3,5]]).
+% lineBack3([[3,4],[3,5],[3,6],[4,7],[5,7],[6,7],[7,6],[7,5],[7,4],[6,3],[5,3],[4,3]]).
+
+
+% % list of positions to represent moves around the board in X-axis and y-axis
+
+% %vertical edge moves
+% edge_coll_a1([[1,4],[9,4], [8,4], [7,4], [6,4], [5,4], [4,4], [3,4], [2,4]]).
+% % inverse of above list
+
+% edge_coll_a11([[9,4],[1,4], [2,4], [3,4], [4,4], [5,4], [6,4], [7,4], [8,4]]).
+
+% edge_coll_a2([[1,5],[9,5], [8,5], [7,5], [6,5], [5,5], [4,5], [3,5], [2,5]]).
+
+% edge_coll_a22([[9,5],[1,5], [2,5], [3,5], [4,5], [5,5], [6,5], [7,5], [8,5]]).
+
+% edge_coll_a3([[1,6],[9,6], [8,6], [7,6], [6,6], [5,6], [4,6], [3,6], [2,6]]).
+
+% edge_coll_a33([[9,6],[1,6], [2,6], [3,6], [4,6], [5,6], [6,6], [7,6], [8,6]]).
+
+% edge_coll_b1([[4,1],[6,1],[5,1]]).
+% edge_coll_b11([[6,1],[4,1],[5,1]]).
+
+% edge_coll_b2([[4,2],[6,2],[5,2]]).
+% edge_coll_b22([[6,2],[4,2],[5,2]]).
+% edge_coll_b3([[4,3],[6,3],[5,3]]).
+% edge_coll_b33([[6,3],[4,3],[5,3]]).
+
+% edge_coll_c1([[4,9],[6,9],[5,9]]).
+% edge_coll_c11([[6,9],[4,9],[5,9]]).
+% edge_coll_c2([[4,8],[6,8],[5,8]]).
+% edge_coll_c22([[6,8],[4,8],[5,8]]).
+
+% edge_coll_c3([[4,7],[6,7],[5,7]]).
+% edge_coll_c33([[6,7],[4,7],[5,7]]).
+
+
+% edge_row_d1([[1,6],[1,4],[1,5]]).
+% edge_row_d11([[1,4],[1,6],[1,5]]).
+
+% edge_row_d2([[2,6],[2,4],[2,5]]).
+% edge_row_d22([[2,4],[2,6],[2,5]]).
+
+% edge_row_d3([[3,6],[3,4],[3,5]]).
+% edge_row_d33([[3,4],[3,6],[3,5]]).
+
+% edge_row_e1([[9,6],[9,4],[9,5]]).
+% edge_row_e11([[9,4],[9,6],[9,5]]).
+% edge_row_e2([[8,6],[8,4],[8,5]]).
+% edge_row_e22([[8,4],[8,6],[8,5]]).
+
+% edge_row_e3([[7,6],[7,4],[7,5]]).
+
+% edge_row_e33([[7,4],[7,6],[7,5]]).
+
+% edge_row_f4([[4,1],[4,9],[4,8],[4,7],[4,6],[4,5],[4,4],[4,3],[4,2]]).
+% edge_row_f44([[4,9],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6],[4,7],[4,8]]).
+
+% edge_row_f5([[5,1],[5,9],[5,8],[5,7],[5,6],[5,5],[5,4],[5,3],[5,2]]).
+% edge_row_f55([[5,9],[5,1],[5,2],[5,3],[5,4],[5,5],[5,6],[5,7],[5,8]]).
+
+% edge_row_f6([[6,1],[6,9],[6,8],[6,7],[6,6],[6,5],[6,4],[6,3],[6,2]]).
+
+% edge_row_f66([[6,9],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[6,7],[6,8]]).
+
+
+
+% special_moves(X, Y, NewX, NewY) :-
+%     lineforward1(Positions1),
+%     lineBack1(Positions2),
+%     lineforward2(Positions3),
+%     lineBack2(Positions4),
+%     lineforward3(Positions5),
+%     lineBack3(Positions6),
+%     edge_coll_a1(Positions7),
+%     edge_coll_a11(Positions8),
+%     edge_coll_a2(Positions9),
+%     edge_coll_a22(Positions10),
+%     edge_coll_a3(Positions11),
+%     edge_coll_a33(Positions12),
+%     edge_coll_b1(Positions13),
+%     edge_coll_b11(Positions14),
+%     edge_coll_b2(Positions15),
+%     edge_coll_b22(Positions16),
+%     edge_coll_b3(Positions17),
+%     edge_coll_b33(Positions18),
+%     edge_coll_c1(Positions19),
+%     edge_coll_c11(Positions20),
+%     edge_coll_c2(Positions21),
+%     edge_coll_c22(Positions22),
+%     edge_coll_c3(Positions23),
+%     edge_coll_c33(Positions24),
+%     edge_row_d1(Positions25),
+%     edge_row_d11(Positions26),
+%     edge_row_d2(Positions27),
+%     edge_row_d22(Positions28),
+%     edge_row_d3(Positions29),
+%     edge_row_d33(Positions30),
+%     edge_row_e1(Positions31),
+%     edge_row_e11(Positions32),
+%     edge_row_e2(Positions33),
+%     edge_row_e22(Positions34),
+%     edge_row_e3(Positions35),
+%     edge_row_e33(Positions36),
+%     edge_row_f4(Positions37),
+%     edge_row_f44(Positions38),
+%     edge_row_f5(Positions39),
+%     edge_row_f55(Positions40),
+%     edge_row_f6(Positions41),
+%     edge_row_f66(Positions42),
+
+    
+%     (   member([X,Y], Positions1),
+%         member([NewX,NewY], Positions1)
+%     ;   member([X,Y], Positions2),
+%         member([NewX,NewY], Positions2)
+        
+%     ;   member([X,Y], Positions3),
+%         member([NewX,NewY], Positions3)
+        
+%     ;   member([X,Y], Positions4),
+%         member([NewX,NewY], Positions4)
+        
+
+    
+%     ;   member([X,Y], Positions5),
+%         member([NewX,NewY], Positions5)
+%     ;   member([X,Y], Positions6),
+%         member([NewX,NewY], Positions6) 
+        
+%     ;   member([X,Y], Positions7),
+%         member([NewX,NewY], Positions7)
+%     ;   member([X,Y], Positions8),
+%         member([NewX,NewY], Positions8)
+%     ;   member([X,Y], Positions9),
+%         member([NewX,NewY], Positions9)
+%     ;   member([X,Y], Positions10),
+%         member([NewX,NewY], Positions10)
+%         %same from Positions 11 to Positions42
+%     ;   member([X,Y], Positions11),
+%         member([NewX,NewY], Positions11)
+%     ;   member([X,Y], Positions12),
+%         member([NewX,NewY], Positions12)
+
+%     ;   member([X,Y], Positions13),
+
+%         member([NewX,NewY], Positions13)
+%     ;   member([X,Y], Positions14),
+%         member([NewX,NewY], Positions14)
+    
+%     %repeat for Positions 15 to Positions 42
+%     ;   member([X,Y], Positions15),
+%         member([NewX,NewY], Positions15)
+%     ;   member([X,Y], Positions16),
+
+%         member([NewX,NewY], Positions16)
+%     ;   member([X,Y], Positions17),
+%         member([NewX,NewY], Positions17)
+%     ;   member([X,Y], Positions18),
+%         member([NewX,NewY], Positions18)  
+%     ;   member([X,Y], Positions19), 
+
+%         member([NewX,NewY], Positions19)
+
+%     ;   member([X,Y], Positions20),
+%         member([NewX,NewY], Positions20)
+%     ;   member([X,Y], Positions21),
+%         member([NewX,NewY], Positions21)
+%     ;   member([X,Y], Positions22), 
+%         member([NewX,NewY], Positions22)
+%     ;   member([X,Y], Positions23),
+%         member([NewX,NewY], Positions23)
+%     ;   member([X,Y], Positions24),
+%         member([NewX,NewY], Positions24)
+%     ;   member([X,Y], Positions25),
+%         member([NewX,NewY], Positions25)
+%     ;   member([X,Y], Positions26),
+%         member([NewX,NewY], Positions26)
+%     ;   member([X,Y], Positions27),
+%         member([NewX,NewY], Positions27)
+%     ;   member([X,Y], Positions28),
+%         member([NewX,NewY], Positions28)  
+%     ;   member([X,Y], Positions29), 
+%         member([NewX,NewY], Positions29)
+%     ;   member([X,Y], Positions30),
+%         member([NewX,NewY], Positions30)
+%     ;   member([X,Y], Positions31),
+%         member([NewX,NewY], Positions31)
+%     ;   member([X,Y], Positions32), 
+%         member([NewX,NewY], Positions32)
+    
+%     ;   member([X,Y], Positions33),
+%         member([NewX,NewY], Positions33)
+%     ;   member([X,Y], Positions34),
+%         member([NewX,NewY], Positions34)
+%     ;   member([X,Y], Position35),
+%         member([NewX,NewY], Position35)
+%     ;   member([X,Y], Positions36),
+%         member([NewX,NewY], Positions36)
+%     ;   member([X,Y], Positions37),
+%         member([NewX,NewY], Positions37)  
+%     ;   member([X,Y], Positions38), 
+%         member([NewX,NewY], Positions38)
+%     ;   member([X,Y], Positions39),
+%         member([NewX,NewY], Positions39)
+%     ;   member([X,Y], Positions40),
+%         member([NewX,NewY], Positions40)
+%     ;   member([X,Y], Positions41), 
+%         member([NewX,NewY], Positions41)
+%     ;   member([X,Y], Positions42),
+%         member([NewX,NewY], Positions42)
+%     ).
+  
+
+% check_path_blocked(List1, Start_Position, End_Position, Result) :-
+%     check_positions(List, Start_Position, End_Position,Result),
+%     p1_positions(P1_Positions),
+%     p2_positions(P2_Positions),
+%     member(Marble, Result), 
+%     (member(Marble, P1_Positions);
+%     member(Marble, P2_Positions)).
+
+
+% check_positions(List, Start_Position, End_Position,Result) :- 
+%    member(Start_Position, List), 
+%    member(End_Position, List), 
+%    list_between(List, Start_Position, End_Position, Result), 
+%    write(Result).
+
+% list_between(List, Start_Position, End_Position, Result) :- 
+%    append(_, [Start_Position|T], List), 
+%    append(Result, [End_Position|_], T).
+
+
 % down move
 path_blocked(X, Y, NewX, NewY) :-
   integer(X), integer(Y), integer(NewX), integer(NewY),
@@ -172,71 +415,24 @@ valid_move(X, Y, NewX, NewY) :-
 % (Y #= NewY), (NewX #= NewY).
 
 % move "circular" between row 3, row 7 , column 3 and column 7
-special_move(X, Y, NewX, NewY) :-
-  board_up_down_lines_rule(NewX,NewY), (
-  ((X #= 3 ; X #= 9), (NewY #= 3 ; NewY #= 7));
-  ((Y #= 3 ; Y #= 7), (NewX #= 3 ; NewX #= 7));
-  ((X #= 3 ; X #= 9), (NewX #= 3 ; NewX #= 7));
-  ((Y #= 3 ; Y #= 7), (NewY #= 3 ; NewY #= 7));
+% special_move(X, Y, NewX, NewY) :-
+%   board_up_down_lines_rule(NewX,NewY), (
+%   ((X #= 3 ; X #= 9), (NewY #= 3 ; NewY #= 7));
+%   ((Y #= 3 ; Y #= 7), (NewX #= 3 ; NewX #= 7));
+%   ((X #= 3 ; X #= 9), (NewX #= 3 ; NewX #= 7));
+%   ((Y #= 3 ; Y #= 7), (NewY #= 3 ; NewY #= 7));
 
-  ((X #= 1 ; X #= 9), (NewY #= 1 ; NewY #= 9));
-  ((Y #= 1 ; Y #= 9), (NewX #= 1 ; NewX #= 9));
-  ((X #= 1 ; X #= 9), (NewX #= 1 ; NewX #= 9));
-  ((Y #= 1 ; Y #= 9), (NewY #= 1 ; NewY #= 9));
+%   ((X #= 1 ; X #= 9), (NewY #= 1 ; NewY #= 9));
+%   ((Y #= 1 ; Y #= 9), (NewX #= 1 ; NewX #= 9));
+%   ((X #= 1 ; X #= 9), (NewX #= 1 ; NewX #= 9));
+%   ((Y #= 1 ; Y #= 9), (NewY #= 1 ; NewY #= 9));
 
   
-  ((X #= 2 ; X #= 8), (NewY #= 2 ; NewY #= 8));
-  ((Y #= 2 ; Y #= 8), (NewX #= 2 ; NewX #= 8));
-  ((X #= 2 ; X #= 8), (NewX #= 2 ; NewX #= 8));
-  ((Y #= 2 ; Y #= 8), (NewY #= 2 ; NewY #= 8)));
-  edge_move(X, Y, NewX, NewY).
-
-% check if the path is blocked for the special moves
-% check if the path is blocked for the special moves
-spec_path_blocked(X, Y, NewX, NewY) :-
-    X #= NewX,
-    Y #< NewY,
-    Y1 #= Y + 1,
-    Y1 #< NewY,
-    p1_positions(P1Positions),
-    p2_positions(P2Positions),
-    \+ member([X, Y1], P1Positions),
-    \+ member([X, Y1], P2Positions),
-    spec_path_blocked(X, Y1, NewX, NewY).
-
-spec_path_blocked(X, Y, NewX, NewY) :-
-    X #= NewX,
-    Y #> NewY,
-    Y1 #= Y - 1,
-    Y1 #> NewY,
-    p1_positions(P1Positions),
-    p2_positions(P2Positions),
-    \+ member([X, Y1], P1Positions),
-    \+ member([X, Y1], P2Positions),
-    spec_path_blocked(X, Y1, NewX, NewY).
-
-spec_path_blocked(X, Y, NewX, NewY) :-
-    X #< NewX,
-    Y #= NewY,
-    X1 #= X + 1,
-    X1 #< NewX,
-    p1_positions(P1Positions),
-    p2_positions(P2Positions),
-    \+ member([X1, Y], P1Positions),
-    \+ member([X1, Y], P2Positions),
-    spec_path_blocked(X1, Y, NewX, NewY).
-
-spec_path_blocked(X, Y, NewX, NewY) :-
-    X #> NewX,
-    Y #= NewY,
-    X1 #= X - 1,
-    X1 #> NewX,
-    p1_positions(P1Positions),
-    p2_positions(P2Positions),
-    \+ member([X1, Y], P1Positions),
-    \+ member([X1, Y], P2Positions),
-    spec_path_blocked(X1, Y, NewX, NewY).
-
+%   ((X #= 2 ; X #= 8), (NewY #= 2 ; NewY #= 8));
+%   ((Y #= 2 ; Y #= 8), (NewX #= 2 ; NewX #= 8));
+%   ((X #= 2 ; X #= 8), (NewX #= 2 ; NewX #= 8));
+%   ((Y #= 2 ; Y #= 8), (NewY #= 2 ; NewY #= 8))).
+  
 
 % movements around edges
 
@@ -254,8 +450,7 @@ move(player_1, X, Y, NewX, NewY) :-
   member([X,Y], Positions), % find the position of the piece
   p2_positions(OpponentPositions),
   \+ member([NewX,NewY], OpponentPositions); % the new position must be empty
-  special_move(X, Y, NewX, NewY),
-  spec_path_blocked(X, Y, NewX, NewY),
+
   p1_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
   p2_positions(OpponentPositions),
@@ -273,21 +468,11 @@ move(player_2, X, Y, NewX, NewY) :-
   member([X,Y], Positions), % find the position of the piece
   p1_positions(OpponentPositions),
   \+ member([NewX,NewY], OpponentPositions);
-  special_move(X, Y, NewX, NewY),
-  spec_path_blocked(X, Y, NewX, NewY),
   p2_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
   p1_positions(OpponentPositions),
   \+ member([NewX,NewY], OpponentPositions)
   ). % the new position must be empty
-
-check_move_val(Player, X, Y, NewX, NewY) :-
-  
-  NewX #>= 1,
-  NewX #=< 9,
-  NewY #>= 1,
-  NewY #=< 9,
-  board_up_down_lines_rule(NewX,NewY),
 
 % Get the positions of a player
 player_positions(player_1, Positions) :- p1_positions(Positions).
@@ -420,25 +605,25 @@ get_current_board :-
   display_board.
 
 
-% Select a random element from a list
-select_random_element(List, Element) :-
-  length(List, Length),
-  random(0, Length, Index),
-  nth0(Index, List, Element).
+% % Select a random element from a list
+% select_random_element(List, Element) :-
+%   length(List, Length),
+%   random(0, Length, Index),
+%   nth0(Index, List, Element).
 
-% Simulated player that plays a random possible move
-play_random_move(Player, NewX, NewY) :-
-  % Retrieve the current player positions
-  player_positions(Player, Positions),
-  % Find all possible moves for the current player
-  findall([X, Y, NewX, NewY], (member([X, Y], Positions), move(X, Y, NewX, NewY)), PossibleMoves),
-  % Select a random element from the list of possible moves
-  select_random_element(PossibleMoves, [_, _, NewX, NewY]),
-  delete_old_pos([X,Y], Positions, NewPositions),
-  retractall(player_positions(Player, _)),
-  % Remove the old position of the piece
-  % Add the new position of the piece
-  asserta(player_positions(Player, [[NewX,NewY]|NewPositions])).
+% % Simulated player that plays a random possible move
+% play_random_move(Player, NewX, NewY) :-
+%   % Retrieve the current player positions
+%   player_positions(Player, Positions),
+%   % Find all possible moves for the current player
+%   findall([X, Y, NewX, NewY], (member([X, Y], Positions), move(X, Y, NewX, NewY)), PossibleMoves),
+%   % Select a random element from the list of possible moves
+%   select_random_element(PossibleMoves, [_, _, NewX, NewY]),
+%   delete_old_pos([X,Y], Positions, NewPositions),
+%   retractall(player_positions(Player, _)),
+%   % Remove the old position of the piece
+%   % Add the new position of the piece
+%   asserta(player_positions(Player, [[NewX,NewY]|NewPositions])).
 
 
  
