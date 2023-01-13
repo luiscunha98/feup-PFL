@@ -65,12 +65,10 @@ ppgame:-
 
 pcgame:-
    
-    play2(cl_easy).
+    play2(cl_easy_1).
 
 ccgame:-
-    chooseDiff('Choose the difficulty for computer 1', Choice1),
-    chooseDiff('Choose the difficulty for computer 2', Choice2),
-    startGame(Choice1,Choice2).
+    play3(cl_easy_1).
 
 % help
 help :-
