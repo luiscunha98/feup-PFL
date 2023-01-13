@@ -14,6 +14,9 @@ size(9).
 :- dynamic p2_positions/1.
 :- dynamic player_positions/2.
 :- dynamic position/3.
+:- dynamic set_p1_positions/1.
+:- dynamic set_p2_positions/1.
+:- dynamic player_positions/2.
 
 
 
@@ -254,26 +257,6 @@ p2_positions([[6,4], [7,4], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
 %     ).
   
 
-% check_path_blocked(List1, Start_Position, End_Position, Result) :-
-%     check_positions(List, Start_Position, End_Position,Result),
-%     p1_positions(P1_Positions),
-%     p2_positions(P2_Positions),
-%     member(Marble, Result), 
-%     (member(Marble, P1_Positions);
-%     member(Marble, P2_Positions)).
-
-
-% check_positions(List, Start_Position, End_Position,Result) :- 
-%    member(Start_Position, List), 
-%    member(End_Position, List), 
-%    list_between(List, Start_Position, End_Position, Result), 
-%    write(Result).
-
-% list_between(List, Start_Position, End_Position, Result) :- 
-%    append(_, [Start_Position|T], List), 
-%    append(Result, [End_Position|_], T).
-
-
 % down move
 path_blocked(X, Y, NewX, NewY) :-
   integer(X), integer(Y), integer(NewX), integer(NewY),
@@ -315,11 +298,7 @@ path_blocked(X, Y, NewX, NewY) :-
   Low #=< High, % between needs to have low <= high
   board_up_down_lines_rule(NewX,NewY), % NewX, NewY not a impossible move
   between(Low, High, BetweenY),
-  % write('X: '), write(X), nl,
-  % write('Y: '), write(Y), nl,
-  % write('NewX: '), write(NewX), nl,
-  % write('NewY: '), write(NewY), nl,
-  % write('BetweenY: '), write(BetweenY), nl,
+
  ((p1_positions(P1Positions), member([X, BetweenY], P1Positions))
   ;
   (p2_positions(P2Positions), member([X, BetweenY], P2Positions)) ).
@@ -332,6 +311,8 @@ path_blocked(X, Y, NewX, NewY) :-
   Low is NewY+1,
   High is Y-1,
   Low #=< High, % between needs to have low <= high
+  board_up_down_lines_rule(NewX,NewY), % NewX, NewY not a impossible move
+  between(Low, High, BetweenY),
   ((p1_positions(P1Positions), member([X, BetweenY], P1Positions))
   ;
   (p2_positions(P2Positions), member([X, BetweenY], P2Positions)) ).
@@ -442,7 +423,6 @@ move(player_1, X, Y, NewX, NewY) :-
   p1_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
   valid_move(X, Y, NewX, NewY),
-   write('Check inside move predicate '), nl,
   p2_positions(OpponentPositions),
   \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
 move(player_2, X, Y, NewX, NewY) :-
@@ -453,7 +433,17 @@ move(player_2, X, Y, NewX, NewY) :-
   p2_positions(Positions),
   member([X,Y], Positions), % find the position of the piece
   valid_move(X, Y, NewX, NewY),
-  
+  p1_positions(OpponentPositions),
+  \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
+
+move(cl_easy, X, Y, NewX, NewY) :-
+  NewX #>= 1,
+  NewX #=< 9,
+  NewY #>= 1,
+  NewY #=< 9,
+  p2_positions(Positions),
+  member([X,Y], Positions), % find the position of the piece
+  valid_move(X, Y, NewX, NewY),
   p1_positions(OpponentPositions),
   \+ member([NewX,NewY], OpponentPositions). % the new position must be empty
 
@@ -503,95 +493,10 @@ has_lost(P) :-
 delete_old_pos(Elem, [Elem|Tail], Tail).
 delete_old_pos(Elem, [Head|Tail], [Head|NewTail]) :- delete_old_pos(Elem, Tail, NewTail).
 
-play(Player) :-
-
-  has_lost(Player), % check if the current player has lost
-  next_player(Player, NextPlayer), % get the next player because the current player has lost
-  write('Player: '), write(NextPlayer), write(' wins!'), nl,
-  !. % nextPlayer wins, stop the game
-%Define the main game loop
-play(Player) :-
- 
- 
-  write('Player '), write(Player), write(', enter your move (X Y NewX NewY): '),
-  read(X), read(Y), read(NewX), read(NewY),nl,
-  write('Check outside if with move '), nl,
-  (move(Player, X, Y, NewX, NewY) -> % if the move is valid
-    write('Check inside if with move '), nl,
-    player_positions(Player, Positions),
-    delete_old_pos([X,Y], Positions, NewPositions), % remove the old position of the piece
-    write('Check new positions: '), write(NewPositions), nl,
-    write('Check old Positions: '), write(Positions), nl,
-    retractall(player_positions(Player, _)),
-    write('Check after retract '), nl,
-    asserta(player_positions(Player, [[NewX,NewY]|NewPositions])),
-    next_player(Player, NextPlayer),
-    write(Player), write('turn board final positions: '), nl,
-    get_current_board,
-    nl, nl,
-    play(NextPlayer) % continue with the next player
-  ; % otherwise
-  write('Invalid move, try again.'), nl,
-  play(Player) % if the move is not valid, ask for a new move from the same player
-  ).
-
 next_player_cl_easy(player_1, cl_easy).
 next_player_cl_easy(cl_easy, player_1).
+
 %play predicate for the random move player
-
-play2(Player) :-
- 
- (Player = player_1,
-  write('Player '), write(Player), write(', enter your move (X Y NewX NewY): '),
-  read(X), read(Y), read(NewX), read(NewY),nl,
-  (move(Player, X, Y, NewX, NewY) -> % if the move is valid
-    write('Check inside if with move '), nl,
-    player_positions(Player, Positions),
-    delete_old_pos([X,Y], Positions, NewPositions), % remove the old position of the piece
-    write('Check new positions: '), write(NewPositions), nl,
-    write('Check old Positions: '), write(Positions), nl,
-    retractall(player_positions(Player, _)),
-    write('Check after retract '), nl,
-    asserta(player_positions(Player, [[NewX,NewY]|NewPositions])),
-    next_player_cl_easy(Player, NextPlayer),
-    write(Player), write('turn board final positions: '), nl,
-    get_current_board,
-    nl, nl,
-    play(NextPlayer) % continue with the next player
-  ; % otherwise
-  write('Invalid move, try again.'), nl,
-  play2(Player) % if the move is not valid, ask for a new move from the same player
-  )
- ); 
-    Player = cl_easy, 
-    play_random_move(Player, X, Y,NewX,NewY), 
-    retract(player_positions(Player, Positions)),
-    delete(Positions, [X, Y], NewPositions),
-    append(NewPositions, [[NewX, NewY]], UpdatedPositions),
-    asserta(player_positions(Player, UpdatedPositions)),
-    % change the current player
-    next_player(Player, NextPlayer),
-    get_current_board,
-    
-    play2(NextPlayer).
-
-
-play2(Player) :-
-
-  has_lost(Player), % check if the current player has lost
-  next_player_cl_easy(Player, NextPlayer), % get the next player because the current player has lost
-  write('Player: '), write(NextPlayer), write(' wins!'), nl,
-  !. % nextPlayer wins, stop the game
-% To iterate through list and perform a goal on each element
-% forall(Xs, Goal) :-
-%     maplist(Goal, Xs).
-
-
-
-% Initialize the board
-% Initialize the board
-
-
 % Set the positions of player 1 on the board
 % Define the set_p1_positions/1 predicate
 set_p1_positions([]).
@@ -621,27 +526,52 @@ init_board :-
 % Display the board
 % Display the board
 display_board :-
+    write('  1 2 3 4 5 6 7 8 9'), nl, % write the column numbers
     forall(between(1, 9, X),
-           (forall(between(1, 9, Y),
-                   (position(X, Y, P),
-                    write(P),
-                    write(' '))),
-            nl)).
+        (write(X), write(' '), % write the row number
+        forall(between(1, 9, Y),
+            (position(X, Y, P),
+             write(P),
+             write(' '))),
+        nl)).
 % Get the current board
-get_current_board :-
-  init_board,
-  p1_positions(P1Positions),
-  p2_positions(P2Positions),
-  set_p1_positions(P1Positions),
-  set_p2_positions(P2Positions),
-  display_board.
+get_current_board(Player,NextPlayer):-
+    init_board,
+    
+    player_positions(Player, PlPositions),
+    player_positions(NextPlayer, NPPositions),
+    ((Player = player_1 ) ->
+        set_p1_positions(PlPositions),
+        set_p2_positions(NPPositions),
+        display_board
+        ;
+        set_p1_positions(NPPositions),
+        set_p2_positions(PlPositions),
+        display_board
+    ).
+    
 
 % Computer player level easy
 play_random_move(Player, X, Y, NewX, NewY) :-
+   get_all_possible_moves(Player, Moves),
+   random_member(Moves, [X, Y, NewX, NewY]),
+   write('Computer player '), write(Player),write(' played move [X,Y to NewX, NewY]: '), write([X, Y, NewX, NewY]),nl,nl.
+find_valid_move([[X, Y]|Rest], X, Y, NewX, NewY) :-
+    findall([X1,Y1], valid_move(X, Y, X1, Y1), NewPositions),
+    ( NewPositions \= [] ->
+        random_member([X1, Y1], NewPositions),
+        NewX = X1,
+        NewY = Y1
+    ;
+    find_valid_move(Rest, X, Y, NewX, NewY)
+    ).
+find_valid_move([], -1, -1, -1, -1).
+
+get_all_possible_moves(Player, Moves) :-
     player_positions(Player, Positions),
-    member([X, Y], Positions),
-    findall([NewX,NewY], valid_move(X, Y, NewX, NewY), NewPositions),
-    random_member([NewX, NewY], NewPositions).
+    size(S),
+    findall([X, Y, NewX, NewY], (member([X, Y], Positions), between(1, S, NewX), between(1, S, NewY), move(Player,X, Y, NewX, NewY)), Moves).
+
 
 
 random_member(List, Member) :-
@@ -649,15 +579,83 @@ random_member(List, Member) :-
     random(1, Length, Index),
     nth1(Index, List, Member).
 
+:- init_board.
+
+play(Player) :-
+
+  has_lost(Player), % check if the current player has lost
+  next_player(Player, NextPlayer), % get the next player because the current player has lost
+  write('Player: '), write(NextPlayer), write(' wins!'), nl,
+  !. % nextPlayer wins, stop the game
+%Define the main game loop
+play(Player) :-
+    next_player(Player, NextPlayer),
+    player_positions(Player, Positions),
+    get_current_board(Player,NextPlayer),
+    write('Player '), write(Player), write(', enter your move (X Y NewX NewY): '),
+    read(X), read(Y), read(NewX), read(NewY),nl,
+    write("Player: "),write(Player) ,write(' positions pieces: ') ,write(Positions),nl,
+    (move(Player, X, Y, NewX, NewY) -> % if the move is valid
+    delete_old_pos([X,Y], Positions, NewPositions), % remove the old position of the piece
+    retractall(player_positions(Player, Positions)),
+   
+    asserta(player_positions(Player, [[NewX,NewY]|NewPositions])),
+    get_current_board(Player,NextPlayer),
+    nl, nl,
+    play(NextPlayer) % continue with the next player
+  ; % otherwise
+  write('Invalid move, try again.'), nl,
+  play(Player) % if the move is not valid, ask for a new move from the same player
+  ).
 
 
- 
 
+play2(Player) :-
+ Player = player_1,
+ next_player_cl_easy(Player, NextPlayer),
+ player_positions(Player, Positions),
+ get_current_board(Player,NextPlayer),
+  write('Player '), write(Player), write(', enter your move (X Y NewX NewY): '),
+  read(X), read(Y), read(NewX), read(NewY),nl,
+  write("Player: "),write(Player) ,write(' positions pieces: ') ,write(Positions),nl,
+  (move(Player, X, Y, NewX, NewY) -> % if the move is valid
+    write(Positions),
+    delete_old_pos([X,Y], Positions, NewPositions), % remove the old position of the piece
+    retractall(player_positions(Player, _)),
+    asserta(player_positions(Player, [[NewX,NewY]|NewPositions])),
+    get_current_board(Player,NextPlayer),
+    nl, nl,
+    play2(NextPlayer) % continue with the next player
+  ; % otherwise
+  write('Invalid move, try again.'), nl,
+  play2(Player) % if the move is not valid, ask for a new move from the same player
+  ).
+play2(Player) :- 
+    Player = cl_easy,
+    write('Computer player '), write(Player), write(' is playing...'), nl,
+    next_player_cl_easy(Player, NextPlayer),
+    get_current_board(Player,NextPlayer),
+    write(Positions),nl,
+    play_random_move(Player, X, Y,NewX,NewY), 
+    player_positions(Player, Positions), 
+    delete_old_pos([X,Y], Positions, NewPositions),
+    retractall(player_positions(Player, _)),
+    asserta(player_positions(Player, [[NewX,NewY]|NewPositions])),
+    % change the current player
+    next_player_cl_easy(Player, NextPlayer),
+
+    get_current_board(Player,NextPlayer),
+    nl, nl,
+    play2(NextPlayer).
+play2(Player) :-
+
+  has_lost(Player), % check if the current player has lost
+  next_player_cl_easy(Player, NextPlayer), % get the next player because the current player has lost
+  write('Player: '), write(NextPlayer), write(' wins!'), nl,
+  !. % nextPlayer wins, stop the game
+
+
+%define position predicate
 
 % Start the game
-% :-init_board.
-% :- play(player_1).
-
-
-
-  
+% :- play2(cl_easy).

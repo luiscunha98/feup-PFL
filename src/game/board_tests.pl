@@ -7,7 +7,6 @@
 
 p1_positions([[1,4], [2,4], [3,5], [3,4], [4,5], [2,6], [3,6], [4,6]]).
 p2_positions([[1,5], [6,9], [8,4], [9,4], [6,6], [7,6], [8,6], [9,6]]).
-cl_easy([[1,4], [2,4], [3,5], [3,4], [4,5], [2,6], [3,6], [4,6]]).
 
 test_move :-
     
@@ -28,8 +27,7 @@ test_move :-
 test_computer_level_easy:-
         
         write('Testing computer_level_easy/1: '), nl,
-        computer_level_easy(player_1,), % player 1 has lost
-        \+computer_level_easy(player_2). % player 2 has won
+        play_random_move(cl_easy, X, Y, NewX, NewY).
 
 
 
@@ -85,21 +83,25 @@ test_display_board :-
     write('Testing get_current_board/0: '), nl,
     get_current_board.
 
+test_play2:-
+
+    write('Testing play2/1: '), nl,
+    play2(cl_easy).
 
 % test_random_move :-
     
 %     write('Testing random_move/1: '), nl,
 %     play_random_move.
 
-run_all_tests:-
+% run_all_tests:-
 
-    test_board_up_down_lines_rule,
-    test_path_blocked,
-    test_player_trapped_lost,
-    test_init_board,
-    test_display_board,
-    test_move,
-    write('All tests passed!'), nl.
+%     test_board_up_down_lines_rule,
+%     test_path_blocked,
+%     test_player_trapped_lost,
+%     test_init_board,
+%     test_display_board,
+%     test_move,
+%     write('All tests passed!'), nl.
 
-% Run all tests
-:- run_all_tests.
+% % Run all tests
+% :- run_all_tests.

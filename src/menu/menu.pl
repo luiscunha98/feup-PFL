@@ -1,4 +1,6 @@
-% Main Menu
+:- consult('newVersion.pl').
+
+% Main Menu 
 mainMenu :-
     repeat, 
     clear,
@@ -59,11 +61,11 @@ gameMenuChoice(2) :- pcgame. % Player vs Computer Game
 gameMenuChoice(3) :- ccgame. % Computer vs Computer Game
 
 ppgame:-
-    startGame(p,p).
+    play(player_1).
 
 pcgame:-
-    chooseDiff('Choose the difficulty for your opponent', Choice),
-    startGame(p,Choice).
+   
+    play(cl_easy).
 
 ccgame:-
     chooseDiff('Choose the difficulty for computer 1', Choice1),
