@@ -1,4 +1,4 @@
-:- consult('newVersion.pl').
+:- consult('play.pl').
 
 % Main Menu 
 mainMenu :-
