@@ -65,7 +65,7 @@ ppgame:-
 
 pcgame:-
    
-    play(cl_easy).
+    play2(cl_easy).
 
 ccgame:-
     chooseDiff('Choose the difficulty for computer 1', Choice1),
